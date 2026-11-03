@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"strings"
+	// "strings"
 )
 
 func indexOf(item string) int {
@@ -27,32 +27,24 @@ func getFileExt(filename string) string {
 }
 
 func writeToFile(filename string, content string) {
+	// os.O_APPEND: Appends data to the file if it exists
+	// os.O_CREATE: Automatically creates the file if it does not exist
+	// os.O_WRONLY: Opens the file in write-only mode
+	file, err := os.OpenFile(filename, os.O_WRONLY|os.O_APPEND|os.O_CREATE, 0644)
+	if err != nil {
+		fmt.Println("Error opening/creating file:", err)
+		return
+	}
+	defer file.Close() // Safely closes when the function returns
 
-	fileList, _ := os.ReadDir("./")
-	for _, file := range fileList {
-		if strings.HasPrefix("output.txt", file.Name()) {
-			file, err := os.OpenFile("output.txt", os.O_WRONLY|os.O_APPEND, 0644)
-			if err != nil {
-				fmt.Println("Error opening file:", err)
-				return
-			}
-			defer file.Close()
-			io.WriteString(file, content)
-			return
-		}
-		file, err := os.Create("output.html")
-		if err != nil {
-			fmt.Println("Error creating file:", err)
-			return
-		}
-		defer file.Close()
-		apeendContent := fmt.Sprintf("%s \n", content)
-		io.WriteString(file, apeendContent)
+	// Write the content followed by a clean newline character
+	_, err = io.WriteString(file, content+"\n")
+	if err != nil {
+		fmt.Println("Error writing to file:", err)
 	}
 }
 
-
-func readFile(filename string) {
+func readFile(filename string, targetFilename string) {
 	file, err := os.Open(filename)
 	if err != nil {
 		fmt.Println("Error opening file:", err)
@@ -63,8 +55,11 @@ func readFile(filename string) {
 	scanner := bufio.NewScanner(file)
 
 	for scanner.Scan() {
-		fmt.Println(scanner.Text())
-		writeToFile("output.txt", "\n"+scanner.Text())
+		line := scanner.Text()
+		fmt.Println(line)
+
+		// Pass the target filename dynamically instead of hardcoding it
+		writeToFile(targetFilename, line)
 	}
 
 	if err := scanner.Err(); err != nil {
@@ -77,9 +72,9 @@ func main() {
 	args := os.Args[1:]
 	fileExtention := getFileExt(args[0])
 
-	if fileExtention == "txt" {
+	if fileExtention != "md" {
 		fmt.Println("Please provide a `.MD` file...")
 		return
 	}
-	readFile(args[0])
+	readFile(args[0], args[1])
 }
