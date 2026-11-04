@@ -38,7 +38,7 @@ func writeToFile(filename string, content string) {
 	defer file.Close() // Safely closes when the function returns
 
 	// Write the content followed by a clean newline character
-	_, err = io.WriteString(file, content+"\n")
+	_, err = io.WriteString(file, content)
 	if err != nil {
 		fmt.Println("Error writing to file:", err)
 	}
